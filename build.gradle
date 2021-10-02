@@ -1,6 +1,35 @@
+buildscript {
+    ext {
+        poi = '5.0.0'
+        wicket = '9.5.0'
+        spring_boot = '2.5.5'
+        reflections = '0.9.12'
+        servlet = '4.0.1'
+        commons_lang3 = '3.12.0'
+        commons_text = '1.9'
+        spring = '5.3.10'
+        jooq = '3.15.3'
+        spring_dependency_management = '1.0.11.RELEASE'
+        joda_time = '2.10.12'
+        commons_io = '2.11.0'
+        metamodel = '5.3.3'
+        liquibase = '4.5.0'
+        commons_dbcp2 = '2.9.0'
+        flyway = '7.15.0'
+        gson = '2.8.8'
+        bouncycastle = '1.69'
+        spring_cloud = '2020.0.4'
+        guava = '31.0-jre'
+
+        httpclient = '4.5.13'
+        okhttp = '4.9.2'
+        dropbox = '4.0.1'
+    }
+}
+
 plugins {
-    id 'org.springframework.boot' version '2.5.5'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version "${spring_boot}"
+    id 'io.spring.dependency-management' version "${spring_dependency_management}"
     id 'java'
 }
 
@@ -15,12 +44,13 @@ repositories {
 
 dependencies {
     implementation 'com.senior.cyber.frmk:common:1.0.0'
-    implementation 'org.apache.commons:commons-lang3:3.12.0'
-    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
-    implementation 'com.dropbox.core:dropbox-core-sdk:4.0.1'
-    implementation 'com.google.code.gson:gson:2.8.8'
-    implementation 'commons-io:commons-io:2.11.0'
+
+    implementation "org.apache.commons:commons-lang3:${commons_lang3}"
+    implementation "org.apache.httpcomponents:httpclient:${httpclient}"
+    implementation "com.squareup.okhttp3:okhttp:${okhttp}"
+    implementation "com.dropbox.core:dropbox-core-sdk:${dropbox}"
+    implementation "com.google.code.gson:gson:${gson}"
+    implementation "commons-io:commons-io:${commons_io}"
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
