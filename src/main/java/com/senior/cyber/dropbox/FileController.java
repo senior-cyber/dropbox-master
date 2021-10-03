@@ -118,7 +118,7 @@ public class FileController {
         LOGGER.info("UserAgent [{}] Token [{}] [Size] [{}] [Path] [{}]", userAgent, token, file.length(), argDto.getPath());
 
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        Map<String, Object> json = new HashMap<>();
+        Map<String, Object> json = new LinkedHashMap<>();
         json.put("id", UUID.randomUUID().toString());
         json.put("name", FilenameUtils.getName(argDto.getPath()));
         json.put("client_modified", DateFormatUtils.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
@@ -150,9 +150,9 @@ public class FileController {
         LOGGER.info("UserAgent [{}] Token [{}] [Size] [{}] [Path] [{}]", userAgent, token, file.length(), argDto.getPath());
 
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        Map<String, Object> json = new HashMap<>();
+        Map<String, Object> json = new LinkedHashMap<>();
         {
-            Map<String, Object> metadata = new HashMap<>();
+            Map<String, Object> metadata = new LinkedHashMap<>();
             metadata.put("name", FilenameUtils.getName(argDto.getPath()));
             metadata.put("path_lower", argDto.getPath());
             metadata.put("path_display", argDto.getPath());
@@ -172,7 +172,7 @@ public class FileController {
             IOUtils.copy(request.getInputStream(), stream);
         }
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        Map<String, Object> json = new HashMap<>();
+        Map<String, Object> json = new LinkedHashMap<>();
         json.put("session_id", uuid);
         this.gson.toJson(json, response.getWriter());
     }
@@ -210,7 +210,7 @@ public class FileController {
         LOGGER.info("        [{}] path [{}]", argDto.getCursor().getSessionId(), argDto.getCommit().getPath());
 
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        Map<String, Object> json = new HashMap<>();
+        Map<String, Object> json = new LinkedHashMap<>();
         json.put("id", UUID.randomUUID().toString());
         json.put("name", FilenameUtils.getName(argDto.getCommit().getPath()));
         json.put("client_modified", DateFormatUtils.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
@@ -235,14 +235,14 @@ public class FileController {
 
         File pathFile = new File(path);
 
-        Map<String, Object> json = new HashMap<>();
+        Map<String, Object> json = new LinkedHashMap<>();
 
         List<Map<String, Object>> entries = new ArrayList<>();
         json.put("entries", entries);
 
         for (File item : pathFile.listFiles()) {
             if (item.isDirectory()) {
-                Map<String, Object> entry = new HashMap<>();
+                Map<String, Object> entry = new LinkedHashMap<>();
                 String itemPath = FilenameUtils.normalizeNoEndSeparator(item.getAbsolutePath(), true);
                 entry.put(".tag", "folder");
                 entry.put("name", item.getName());
@@ -250,8 +250,11 @@ public class FileController {
                 entry.put("path_display", itemPath.substring(workspace.length()));
                 entry.put("id", "id:" + UUID.randomUUID());
                 entries.add(entry);
-            } else if (item.isFile()) {
-                Map<String, Object> entry = new HashMap<>();
+            }
+        }
+        for (File item : pathFile.listFiles()) {
+            if (item.isFile()) {
+                Map<String, Object> entry = new LinkedHashMap<>();
                 String itemPath = FilenameUtils.normalizeNoEndSeparator(item.getAbsolutePath(), true);
                 entry.put(".tag", "file");
                 entry.put("name", item.getName());
@@ -284,9 +287,9 @@ public class FileController {
         File fromPathFile = new File(fromPath);
         File toPathFile = new File(toPath);
 
-        Map<String, Object> json = new HashMap<>();
+        Map<String, Object> json = new LinkedHashMap<>();
 
-        Map<String, Object> metadata = new HashMap<>();
+        Map<String, Object> metadata = new LinkedHashMap<>();
         json.put("metadata", metadata);
 
         if (fromPathFile.isFile()) {
