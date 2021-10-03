@@ -46,6 +46,8 @@ public class FileController {
 
     @RequestMapping(path = "/2/files/download", method = RequestMethod.POST, produces = "application/octet-stream")
     public ResponseEntity<Resource> download(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String workspace = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath(), false);
+
         String authorization = request.getHeader("Authorization");
         String userAgent = request.getHeader("User-Agent");
         String range = request.getHeader("Range");
@@ -54,7 +56,7 @@ public class FileController {
 
         LOGGER.info("UserAgent [{}] Token [{}] [Range] [{}] [Path] [{}]", userAgent, token, range, argDto.getPath());
 
-        String path = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath() + "/" + argDto.getPath(), true);
+        String path = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath() + argDto.getPath(), true);
         File file = new File(path);
 
         if (!path.startsWith(FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath(), true))) {
@@ -64,6 +66,19 @@ public class FileController {
         if (!file.isFile() || !file.canRead()) {
             throw new IllegalArgumentException();
         }
+
+        Map<String, Object> dropboxApiResult = new LinkedHashMap<>();
+        response.setHeader("Dropbox-Api-Result", this.gson.toJson(dropboxApiResult));
+        dropboxApiResult.put("name", file.getName());
+        dropboxApiResult.put("path_lower", path.substring(workspace.length()));
+        dropboxApiResult.put("path_display", path.substring(workspace.length()));
+        dropboxApiResult.put("id", "id:" + UUID.randomUUID());
+        dropboxApiResult.put("client_modified", DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(new Date()) + "Z");
+        dropboxApiResult.put("server_modified", DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(new Date()) + "Z");
+        dropboxApiResult.put("rev", System.currentTimeMillis() + "");
+        dropboxApiResult.put("size", file.length());
+        dropboxApiResult.put("is_downloadable", true);
+        dropboxApiResult.put("content_hash", RandomStringUtils.randomAlphabetic(64));
 
         FileSystemResource resource = new FileSystemResource(file);
         String extension = FilenameUtils.getExtension(file.getName());
