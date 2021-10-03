@@ -1,7 +1,7 @@
 package com.senior.cyber.dropbox;
 
-import com.senior.cyber.dropbox.configuration.ApplicationConfiguration;
 import com.google.gson.Gson;
+import com.senior.cyber.dropbox.configuration.ApplicationConfiguration;
 import okhttp3.OkHttpClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -28,10 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 public class FileController {
@@ -221,6 +218,104 @@ public class FileController {
         json.put("server_modified", DateFormatUtils.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss'Z'"));
         json.put("rev", StringUtils.lowerCase(RandomStringUtils.randomNumeric(9)));
         json.put("size", destFile.length());
+        this.gson.toJson(json, response.getWriter());
+    }
+
+    @RequestMapping(path = "/2/files/list_folder", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    public void listFolder(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        ListFolderArg arg = this.gson.fromJson(IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8), ListFolderArg.class);
+
+        String workspace = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath(), false);
+
+        String path = null;
+        if (arg.getPath() == null || "".equals(arg.getPath())) {
+            path = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath(), true);
+        } else {
+            path = FilenameUtils.normalize(new File(this.properties.getWorkspace().getAbsolutePath(), arg.getPath()).getAbsolutePath(), true);
+        }
+
+        File pathFile = new File(path);
+
+        Map<String, Object> json = new HashMap<>();
+
+        List<Map<String, Object>> entries = new ArrayList<>();
+        json.put("entries", entries);
+
+        for (File item : pathFile.listFiles()) {
+            if (item.isDirectory()) {
+                Map<String, Object> entry = new HashMap<>();
+                String itemPath = FilenameUtils.normalizeNoEndSeparator(item.getAbsolutePath(), true);
+                entry.put(".tag", "folder");
+                entry.put("name", item.getName());
+                entry.put("path_lower", itemPath.substring(workspace.length()));
+                entry.put("path_display", itemPath.substring(workspace.length()));
+                entry.put("id", "id:" + UUID.randomUUID());
+                entries.add(entry);
+            } else if (item.isFile()) {
+                Map<String, Object> entry = new HashMap<>();
+                String itemPath = FilenameUtils.normalizeNoEndSeparator(item.getAbsolutePath(), true);
+                entry.put(".tag", "file");
+                entry.put("name", item.getName());
+                entry.put("path_lower", itemPath.substring(workspace.length()));
+                entry.put("path_display", itemPath.substring(workspace.length()));
+                entry.put("id", "id:" + UUID.randomUUID());
+                entry.put("client_modified", DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(new Date()) + "Z");
+                entry.put("server_modified", DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(new Date()) + "Z");
+                entry.put("rev", System.currentTimeMillis() + "");
+                entry.put("size", item.length());
+                entry.put("is_downloadable", true);
+                entry.put("content_hash", UUID.randomUUID().toString());
+                entries.add(entry);
+            }
+        }
+        json.put("cursor", UUID.randomUUID() + "");
+        json.put("has_more", false);
+        this.gson.toJson(json, response.getWriter());
+    }
+
+    @RequestMapping(path = "/2/files/move_v2", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    public void move(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        RelocationArg arg = this.gson.fromJson(IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8), RelocationArg.class);
+
+        String workspace = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath(), false);
+
+        String fromPath = FilenameUtils.normalize(new File(this.properties.getWorkspace().getAbsolutePath(), arg.getFromPath()).getAbsolutePath(), true);
+        String toPath = FilenameUtils.normalize(new File(this.properties.getWorkspace().getAbsolutePath(), arg.getToPath()).getAbsolutePath(), true);
+
+        File fromPathFile = new File(fromPath);
+        File toPathFile = new File(toPath);
+
+        Map<String, Object> json = new HashMap<>();
+
+        Map<String, Object> metadata = new HashMap<>();
+        json.put("metadata", metadata);
+
+        if (fromPathFile.isFile()) {
+            FileUtils.moveFile(fromPathFile, toPathFile);
+            String itemPath = FilenameUtils.normalizeNoEndSeparator(toPathFile.getAbsolutePath(), true);
+            metadata.put(".tag", "file");
+            metadata.put("name", toPathFile.getName());
+            metadata.put("path_lower", itemPath.substring(workspace.length()));
+            metadata.put("path_display", itemPath.substring(workspace.length()));
+            metadata.put("id", "id:" + UUID.randomUUID());
+            metadata.put("client_modified", DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(new Date()) + "Z");
+            metadata.put("server_modified", DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(new Date()) + "Z");
+            metadata.put("rev", System.currentTimeMillis() + "");
+            metadata.put("size", toPathFile.length());
+            metadata.put("is_downloadable", true);
+            metadata.put("content_hash", UUID.randomUUID().toString());
+        }
+
+        if (fromPathFile.isDirectory()) {
+            FileUtils.moveFile(fromPathFile, toPathFile);
+            String itemPath = FilenameUtils.normalizeNoEndSeparator(toPathFile.getAbsolutePath(), true);
+            metadata.put(".tag", "folder");
+            metadata.put("name", toPathFile.getName());
+            metadata.put("path_lower", itemPath.substring(workspace.length()));
+            metadata.put("path_display", itemPath.substring(workspace.length()));
+            metadata.put("id", "id:" + UUID.randomUUID());
+        }
+
         this.gson.toJson(json, response.getWriter());
     }
 
