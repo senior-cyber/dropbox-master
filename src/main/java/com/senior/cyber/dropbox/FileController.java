@@ -266,7 +266,7 @@ public class FileController {
                 entry.put("rev", System.currentTimeMillis() + "");
                 entry.put("size", item.length());
                 entry.put("is_downloadable", true);
-                entry.put("content_hash", UUID.randomUUID().toString());
+                entry.put("content_hash", RandomStringUtils.randomAlphabetic(64));
                 entries.add(entry);
             }
         }
@@ -305,7 +305,7 @@ public class FileController {
             metadata.put("rev", System.currentTimeMillis() + "");
             metadata.put("size", toPathFile.length());
             metadata.put("is_downloadable", true);
-            metadata.put("content_hash", UUID.randomUUID().toString());
+            metadata.put("content_hash", RandomStringUtils.randomAlphabetic(64));
         }
 
         if (fromPathFile.isDirectory()) {
