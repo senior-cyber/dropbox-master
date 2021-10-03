@@ -197,7 +197,6 @@ public class FileController {
             IOUtils.copy(request.getInputStream(), stream);
         }
 
-
         String path = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath() + "/" + argDto.getCommit().getPath(), true);
 
         if (!path.startsWith(FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath(), true))) {
@@ -221,7 +220,7 @@ public class FileController {
         this.gson.toJson(json, response.getWriter());
     }
 
-    @RequestMapping(path = "/2/files/list_folder", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @RequestMapping(path = "/2/files/list_folder", method = RequestMethod.POST, produces = "application/json")
     public void listFolder(HttpServletRequest request, HttpServletResponse response) throws IOException {
         ListFolderArg arg = this.gson.fromJson(IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8), ListFolderArg.class);
 
@@ -273,7 +272,7 @@ public class FileController {
         this.gson.toJson(json, response.getWriter());
     }
 
-    @RequestMapping(path = "/2/files/move_v2", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @RequestMapping(path = "/2/files/move_v2", method = RequestMethod.POST, produces = "application/json")
     public void move(HttpServletRequest request, HttpServletResponse response) throws IOException {
         RelocationArg arg = this.gson.fromJson(IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8), RelocationArg.class);
 
