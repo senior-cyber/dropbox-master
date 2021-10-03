@@ -68,7 +68,6 @@ public class FileController {
         }
 
         Map<String, Object> dropboxApiResult = new LinkedHashMap<>();
-        response.setHeader("Dropbox-Api-Result", this.gson.toJson(dropboxApiResult));
         dropboxApiResult.put("name", file.getName());
         dropboxApiResult.put("path_lower", path.substring(workspace.length()));
         dropboxApiResult.put("path_display", path.substring(workspace.length()));
@@ -79,6 +78,7 @@ public class FileController {
         dropboxApiResult.put("size", file.length());
         dropboxApiResult.put("is_downloadable", true);
         dropboxApiResult.put("content_hash", RandomStringUtils.randomAlphabetic(64));
+        response.setHeader("Dropbox-Api-Result", this.gson.toJson(dropboxApiResult));
 
         FileSystemResource resource = new FileSystemResource(file);
         String extension = FilenameUtils.getExtension(file.getName());
