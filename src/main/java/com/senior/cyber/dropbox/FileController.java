@@ -247,6 +247,7 @@ public class FileController {
         } else {
             path = FilenameUtils.normalize(new File(this.properties.getWorkspace().getAbsolutePath(), arg.getPath()).getAbsolutePath(), true);
         }
+        LOGGER.info("path [{}]", path);
 
         File pathFile = new File(path);
 
@@ -255,34 +256,38 @@ public class FileController {
         List<Map<String, Object>> entries = new ArrayList<>();
         json.put("entries", entries);
 
-        for (File item : pathFile.listFiles()) {
-            if (item.isDirectory()) {
-                Map<String, Object> entry = new LinkedHashMap<>();
-                String itemPath = FilenameUtils.normalizeNoEndSeparator(item.getAbsolutePath(), true);
-                entry.put(".tag", "folder");
-                entry.put("name", item.getName());
-                entry.put("path_lower", itemPath.substring(workspace.length()));
-                entry.put("path_display", itemPath.substring(workspace.length()));
-                entry.put("id", "id:" + UUID.randomUUID());
-                entries.add(entry);
+        File[] items = pathFile.listFiles();
+
+        if (items != null) {
+            for (File item : items) {
+                if (item.isDirectory()) {
+                    Map<String, Object> entry = new LinkedHashMap<>();
+                    String itemPath = FilenameUtils.normalizeNoEndSeparator(item.getAbsolutePath(), true);
+                    entry.put(".tag", "folder");
+                    entry.put("name", item.getName());
+                    entry.put("path_lower", itemPath.substring(workspace.length()));
+                    entry.put("path_display", itemPath.substring(workspace.length()));
+                    entry.put("id", "id:" + UUID.randomUUID());
+                    entries.add(entry);
+                }
             }
-        }
-        for (File item : pathFile.listFiles()) {
-            if (item.isFile()) {
-                Map<String, Object> entry = new LinkedHashMap<>();
-                String itemPath = FilenameUtils.normalizeNoEndSeparator(item.getAbsolutePath(), true);
-                entry.put(".tag", "file");
-                entry.put("name", item.getName());
-                entry.put("path_lower", itemPath.substring(workspace.length()));
-                entry.put("path_display", itemPath.substring(workspace.length()));
-                entry.put("id", "id:" + UUID.randomUUID());
-                entry.put("client_modified", DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(new Date()) + "Z");
-                entry.put("server_modified", DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(new Date()) + "Z");
-                entry.put("rev", System.currentTimeMillis() + "");
-                entry.put("size", item.length());
-                entry.put("is_downloadable", true);
-                entry.put("content_hash", RandomStringUtils.randomAlphabetic(64));
-                entries.add(entry);
+            for (File item : items) {
+                if (item.isFile()) {
+                    Map<String, Object> entry = new LinkedHashMap<>();
+                    String itemPath = FilenameUtils.normalizeNoEndSeparator(item.getAbsolutePath(), true);
+                    entry.put(".tag", "file");
+                    entry.put("name", item.getName());
+                    entry.put("path_lower", itemPath.substring(workspace.length()));
+                    entry.put("path_display", itemPath.substring(workspace.length()));
+                    entry.put("id", "id:" + UUID.randomUUID());
+                    entry.put("client_modified", DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(new Date()) + "Z");
+                    entry.put("server_modified", DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(new Date()) + "Z");
+                    entry.put("rev", System.currentTimeMillis() + "");
+                    entry.put("size", item.length());
+                    entry.put("is_downloadable", true);
+                    entry.put("content_hash", RandomStringUtils.randomAlphabetic(64));
+                    entries.add(entry);
+                }
             }
         }
         json.put("cursor", UUID.randomUUID() + "");
