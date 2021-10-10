@@ -48,13 +48,11 @@ public class FileController {
     public ResponseEntity<Resource> download(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String workspace = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath(), false);
 
-        String authorization = request.getHeader("Authorization");
         String userAgent = request.getHeader("User-Agent");
         String range = request.getHeader("Range");
-        String token = authorization.substring(7);
         ArgDto argDto = this.gson.fromJson(request.getHeader("Dropbox-API-Arg"), ArgDto.class);
 
-        LOGGER.info("UserAgent [{}] Token [{}] [Range] [{}] [Path] [{}]", userAgent, token, range, argDto.getPath());
+        LOGGER.info("UserAgent [{}] [Range] [{}] [Path] [{}]", userAgent, range, argDto.getPath());
 
         String path = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath() + argDto.getPath(), true);
         File file = new File(path);
@@ -107,9 +105,7 @@ public class FileController {
 
     @RequestMapping(path = "/2/files/upload", method = RequestMethod.POST, produces = "application/json")
     public void upload(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String authorization = request.getHeader("Authorization");
         String userAgent = request.getHeader("User-Agent");
-        String token = authorization.substring(7);
         ArgDto argDto = this.gson.fromJson(request.getHeader("Dropbox-API-Arg"), ArgDto.class);
 
         String path = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath() + "/" + argDto.getPath(), true);
@@ -130,7 +126,7 @@ public class FileController {
             IOUtils.copy(request.getInputStream(), stream);
         }
 
-        LOGGER.info("UserAgent [{}] Token [{}] [Size] [{}] [Path] [{}]", userAgent, token, file.length(), argDto.getPath());
+        LOGGER.info("UserAgent [{}] [Size] [{}] [Path] [{}]", userAgent, file.length(), argDto.getPath());
 
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         Map<String, Object> json = new LinkedHashMap<>();
@@ -145,9 +141,7 @@ public class FileController {
 
     @RequestMapping(path = "/2/files/delete_v2", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public void deleteV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String authorization = request.getHeader("Authorization");
         String userAgent = request.getHeader("User-Agent");
-        String token = authorization.substring(7);
 
         ArgDto argDto = this.gson.fromJson(IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8), ArgDto.class);
         String path = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath() + "/" + argDto.getPath(), true);
@@ -162,7 +156,7 @@ public class FileController {
             FileUtils.deleteQuietly(file);
         }
 
-        LOGGER.info("UserAgent [{}] Token [{}] [Size] [{}] [Path] [{}]", userAgent, token, file.length(), argDto.getPath());
+        LOGGER.info("UserAgent [{}] [Size] [{}] [Path] [{}]", userAgent, file.length(), argDto.getPath());
 
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         Map<String, Object> json = new LinkedHashMap<>();
