@@ -44,7 +44,7 @@ public class FileController {
     @Autowired
     private OkHttpClient client;
 
-    @RequestMapping(path = "/2/files/download", method = RequestMethod.POST, produces = "application/octet-stream")
+    @RequestMapping(path = "/2/files/download", method = RequestMethod.POST)
     public ResponseEntity<Resource> download(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String workspace = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath(), false);
 
@@ -55,11 +55,6 @@ public class FileController {
         LOGGER.info("UserAgent [{}] [Range] [{}] [Path] [{}]", userAgent, range, argDto.getPath());
 
         String path = FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath() + argDto.getPath(), true);
-        String extension = "";
-        if (path.endsWith(".mp4") || path.endsWith(".vtt") || path.endsWith(".mp3")) {
-            extension = path.substring(path.length() - 3);
-            path = path.substring(0, path.length() - 4);
-        }
         File file = new File(path);
 
         if (!path.startsWith(FilenameUtils.normalize(this.properties.getWorkspace().getAbsolutePath(), true))) {
@@ -84,7 +79,7 @@ public class FileController {
         response.setHeader("Dropbox-Api-Result", this.gson.toJson(dropboxApiResult));
 
         FileSystemResource resource = new FileSystemResource(file);
-        // String extension = FilenameUtils.getExtension(file.getName());
+        String extension = FilenameUtils.getExtension(file.getName());
         if ("jpg".equalsIgnoreCase(extension)) {
             return ResponseEntity.status(HttpStatus.OK).header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"").contentType(MediaType.IMAGE_JPEG).body(resource);
         } else if ("png".equalsIgnoreCase(extension)) {
